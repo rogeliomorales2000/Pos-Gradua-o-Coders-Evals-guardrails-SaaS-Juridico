@@ -1,0 +1,2701 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>LexAI — Assistente Jurídico Empresarial</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f5f7fb;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --border: #e2e8f0;
+
+            --text: #172033;
+            --muted: #64748b;
+
+            --primary: #1e3a5f;
+            --primary-light: #2d5d8c;
+
+            --success: #15803d;
+            --success-bg: #dcfce7;
+
+            --warning: #b45309;
+            --warning-bg: #fef3c7;
+
+            --danger: #b91c1c;
+            --danger-bg: #fee2e2;
+
+            --info: #0369a1;
+            --info-bg: #e0f2fe;
+
+            --shadow:
+                0 10px 30px rgba(15, 23, 42, 0.08);
+
+            --radius: 14px;
+        }
+
+        body {
+            font-family:
+                Inter,
+                ui-sans-serif,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: var(--bg);
+            color: var(--text);
+
+            min-height: 100vh;
+        }
+
+        button,
+        input,
+        textarea {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        /* =========================
+           APP
+        ========================== */
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* =========================
+           HEADER
+        ========================== */
+
+        .header {
+            height: 70px;
+            background: var(--surface);
+
+            border-bottom:
+                1px solid var(--border);
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 28px;
+
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+
+            border-radius: 10px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: var(--primary);
+            color: white;
+
+            font-size: 20px;
+        }
+
+        .brand h1 {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .brand span {
+            display: block;
+
+            color: var(--muted);
+
+            font-size: 11px;
+
+            margin-top: 2px;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            background: var(--success);
+
+            box-shadow:
+                0 0 0 4px var(--success-bg);
+        }
+
+        /* =========================
+           MAIN
+        ========================== */
+
+        .main {
+            flex: 1;
+
+            display: grid;
+
+            grid-template-columns:
+                310px
+                minmax(500px, 1fr)
+                340px;
+
+            height: calc(100vh - 70px);
+
+            overflow: hidden;
+        }
+
+        /* =========================
+           SIDEBAR
+        ========================== */
+
+        .sidebar {
+            background: var(--surface);
+
+            border-right:
+                1px solid var(--border);
+
+            padding: 20px;
+
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.08em;
+
+            color: var(--muted);
+
+            margin-bottom: 12px;
+        }
+
+        .new-chat {
+            width: 100%;
+
+            border: none;
+
+            background: var(--primary);
+
+            color: white;
+
+            border-radius: 10px;
+
+            padding: 12px 14px;
+
+            font-weight: 600;
+
+            margin-bottom: 24px;
+        }
+
+        .new-chat:hover {
+            background: var(--primary-light);
+        }
+
+        .conversation {
+            padding: 12px;
+
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            margin-bottom: 5px;
+        }
+
+        .conversation:hover {
+            background: var(--surface-2);
+        }
+
+        .conversation.active {
+            background: #edf4fb;
+        }
+
+        .conversation-title {
+            font-size: 13px;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+        .conversation-date {
+            font-size: 11px;
+
+            color: var(--muted);
+
+            margin-top: 4px;
+        }
+
+        /* =========================
+           CHAT
+        ========================== */
+
+        .chat {
+            display: flex;
+
+            flex-direction: column;
+
+            min-width: 0;
+        }
+
+        .chat-header {
+            height: 65px;
+
+            background: var(--surface);
+
+            border-bottom:
+                1px solid var(--border);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 22px;
+        }
+
+        .chat-title {
+            font-weight: 700;
+
+            font-size: 15px;
+        }
+
+        .chat-subtitle {
+            color: var(--muted);
+
+            font-size: 11px;
+
+            margin-top: 2px;
+        }
+
+        .clear-btn {
+            border: 1px solid var(--border);
+
+            background: white;
+
+            color: var(--muted);
+
+            border-radius: 8px;
+
+            padding: 7px 11px;
+
+            font-size: 12px;
+        }
+
+        /* =========================
+           MESSAGES
+        ========================== */
+
+        .messages {
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 28px;
+
+            scroll-behavior: smooth;
+        }
+
+        .welcome {
+            max-width: 720px;
+
+            margin:
+                30px auto
+                40px;
+
+            text-align: center;
+        }
+
+        .welcome-icon {
+            width: 62px;
+            height: 62px;
+
+            border-radius: 16px;
+
+            background: var(--primary);
+
+            color: white;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            margin: 0 auto 18px;
+
+            font-size: 28px;
+        }
+
+        .welcome h2 {
+            font-size: 25px;
+
+            margin-bottom: 10px;
+        }
+
+        .welcome p {
+            color: var(--muted);
+
+            line-height: 1.6;
+
+            font-size: 14px;
+        }
+
+        .suggestions {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 10px;
+
+            margin-top: 24px;
+        }
+
+        .suggestion {
+            background: white;
+
+            border: 1px solid var(--border);
+
+            padding: 14px;
+
+            border-radius: 10px;
+
+            text-align: left;
+
+            color: var(--text);
+
+            font-size: 13px;
+        }
+
+        .suggestion:hover {
+            border-color: var(--primary-light);
+
+            background: #f8fbff;
+        }
+
+        /* =========================
+           MESSAGE
+        ========================== */
+
+        .message {
+            max-width: 850px;
+
+            margin:
+                0 auto 20px;
+
+            display: flex;
+
+            gap: 12px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+
+            min-width: 34px;
+
+            border-radius: 9px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 14px;
+
+            background: var(--primary);
+
+            color: white;
+        }
+
+        .message.user .avatar {
+            background: #e2e8f0;
+
+            color: #334155;
+
+            order: 2;
+        }
+
+        .message-content {
+            max-width: 75%;
+        }
+
+        .message-bubble {
+            background: white;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 12px;
+
+            padding: 14px 16px;
+
+            font-size: 14px;
+
+            line-height: 1.65;
+
+            box-shadow:
+                0 2px 8px rgba(15, 23, 42, 0.03);
+        }
+
+        .message.user .message-bubble {
+            background: var(--primary);
+
+            color: white;
+
+            border-color: var(--primary);
+        }
+
+        .message-time {
+            color: var(--muted);
+
+            font-size: 10px;
+
+            margin-top: 5px;
+        }
+
+        /* =========================
+           INPUT
+        ========================== */
+
+        .composer-area {
+            padding: 14px 22px 18px;
+
+            background: var(--surface);
+
+            border-top:
+                1px solid var(--border);
+        }
+
+        .attachment-preview {
+            display: none;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            background: var(--surface-2);
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 9px;
+
+            padding: 9px 12px;
+
+            margin-bottom: 9px;
+
+            font-size: 12px;
+        }
+
+        .attachment-preview.visible {
+            display: flex;
+        }
+
+        .attachment-name {
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+        }
+
+        .remove-file {
+            border: none;
+
+            background: transparent;
+
+            color: var(--danger);
+
+            font-size: 16px;
+        }
+
+        .composer {
+            max-width: 850px;
+
+            margin: auto;
+
+            display: flex;
+
+            align-items: flex-end;
+
+            gap: 8px;
+        }
+
+        .attach-btn {
+            width: 44px;
+            height: 44px;
+
+            border:
+                1px solid var(--border);
+
+            background: white;
+
+            border-radius: 10px;
+
+            font-size: 18px;
+        }
+
+        .attach-btn:hover {
+            background: var(--surface-2);
+        }
+
+        .input-wrapper {
+            flex: 1;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 12px;
+
+            background: white;
+
+            padding: 4px;
+        }
+
+        textarea {
+            width: 100%;
+
+            border: none;
+
+            outline: none;
+
+            resize: none;
+
+            padding: 10px 12px;
+
+            min-height: 40px;
+
+            max-height: 130px;
+
+            color: var(--text);
+
+            background: transparent;
+
+            font-size: 14px;
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: var(--primary);
+
+            color: white;
+
+            font-size: 17px;
+        }
+
+        .send-btn:disabled {
+            opacity: .5;
+
+            cursor: not-allowed;
+        }
+
+        .legal-warning {
+            max-width: 850px;
+
+            margin: 8px auto 0;
+
+            color: var(--muted);
+
+            font-size: 10px;
+
+            text-align: center;
+        }
+
+        /* =========================
+           RIGHT PANEL
+        ========================== */
+
+        .right-panel {
+            background: var(--surface);
+
+            border-left:
+                1px solid var(--border);
+
+            padding: 20px;
+
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            margin-bottom: 25px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+
+            font-weight: 700;
+
+            margin-bottom: 12px;
+        }
+
+        /* =========================
+           UPLOAD
+        ========================== */
+
+        .upload-zone {
+            border:
+                1.5px dashed #cbd5e1;
+
+            border-radius: 12px;
+
+            padding: 25px 15px;
+
+            text-align: center;
+
+            background: var(--surface-2);
+
+            transition: .2s;
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--primary);
+
+            background: #eff6ff;
+        }
+
+        .upload-icon {
+            font-size: 28px;
+
+            margin-bottom: 10px;
+        }
+
+        .upload-zone strong {
+            font-size: 13px;
+        }
+
+        .upload-zone p {
+            color: var(--muted);
+
+            font-size: 11px;
+
+            line-height: 1.5;
+
+            margin: 6px 0 12px;
+        }
+
+        .choose-file {
+            display: inline-block;
+
+            padding: 8px 12px;
+
+            background: white;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 8px;
+
+            font-size: 12px;
+
+            font-weight: 600;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* =========================
+           DOCUMENT
+        ========================== */
+
+        .document-card {
+            display: none;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 10px;
+
+            padding: 12px;
+        }
+
+        .document-card.visible {
+            display: block;
+        }
+
+        .document-name {
+            font-size: 12px;
+
+            font-weight: 600;
+
+            word-break: break-word;
+        }
+
+        .document-meta {
+            color: var(--muted);
+
+            font-size: 10px;
+
+            margin-top: 4px;
+        }
+
+        .analyze-btn {
+            width: 100%;
+
+            border: none;
+
+            background: var(--primary);
+
+            color: white;
+
+            border-radius: 8px;
+
+            padding: 10px;
+
+            margin-top: 12px;
+
+            font-size: 12px;
+
+            font-weight: 600;
+        }
+
+        /* =========================
+           RISK
+        ========================== */
+
+        .risk-card {
+            border:
+                1px solid var(--border);
+
+            border-radius: 11px;
+
+            padding: 14px;
+        }
+
+        .risk-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 12px;
+        }
+
+        .risk-label {
+            color: var(--muted);
+
+            font-size: 11px;
+        }
+
+        .risk-value {
+            font-weight: 700;
+
+            font-size: 13px;
+        }
+
+        .risk-bar {
+            height: 7px;
+
+            background: #e2e8f0;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+        }
+
+        .risk-progress {
+            height: 100%;
+
+            width: 0%;
+
+            background: var(--success);
+
+            transition: width .5s;
+        }
+
+        /* =========================
+           FINDINGS
+        ========================== */
+
+        .finding {
+            border:
+                1px solid var(--border);
+
+            border-radius: 10px;
+
+            padding: 11px;
+
+            margin-bottom: 8px;
+        }
+
+        .finding-top {
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 10px;
+        }
+
+        .finding-category {
+            font-weight: 600;
+
+            font-size: 12px;
+        }
+
+        .severity {
+            font-size: 9px;
+
+            padding: 3px 6px;
+
+            border-radius: 20px;
+
+            font-weight: 700;
+        }
+
+        .severity.high {
+            color: var(--danger);
+
+            background: var(--danger-bg);
+        }
+
+        .severity.medium {
+            color: var(--warning);
+
+            background: var(--warning-bg);
+        }
+
+        .severity.low {
+            color: var(--success);
+
+            background: var(--success-bg);
+        }
+
+        .finding-description {
+            font-size: 11px;
+
+            color: var(--muted);
+
+            margin-top: 7px;
+
+            line-height: 1.5;
+        }
+
+        /* =========================
+           LOADING
+        ========================== */
+
+        .typing {
+            display: flex;
+
+            gap: 4px;
+
+            align-items: center;
+        }
+
+        .typing span {
+            width: 6px;
+            height: 6px;
+
+            border-radius: 50%;
+
+            background: #94a3b8;
+
+            animation:
+                typing .9s infinite;
+        }
+
+        .typing span:nth-child(2) {
+            animation-delay: .15s;
+        }
+
+        .typing span:nth-child(3) {
+            animation-delay: .3s;
+        }
+
+        @keyframes typing {
+
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-4px);
+            }
+
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================== */
+
+        @media (max-width: 1100px) {
+
+            .main {
+                grid-template-columns:
+                    240px
+                    minmax(400px, 1fr);
+            }
+
+            .right-panel {
+                display: none;
+            }
+
+        }
+
+        @media (max-width: 750px) {
+
+            .main {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .messages {
+                padding: 18px 12px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .suggestions {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 0 15px;
+            }
+
+            .system-status {
+                display: none;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                ⚖
+            </div>
+
+            <div>
+
+                <h1>LexAI</h1>
+
+                <span>
+                    Assistente Jurídico Empresarial
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="system-status">
+
+            <span class="status-dot"></span>
+
+            Sistema operacional
+
+        </div>
+
+    </header>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <button
+                class="new-chat"
+                onclick="newConversation()"
+            >
+                + Nova análise
+            </button>
+
+            <div class="sidebar-title">
+                Conversas recentes
+            </div>
+
+            <div id="conversationList">
+
+                <div class="conversation active">
+
+                    <div class="conversation-title">
+                        Nova análise jurídica
+                    </div>
+
+                    <div class="conversation-date">
+                        Agora
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- CHAT -->
+
+        <section class="chat">
+
+            <div class="chat-header">
+
+                <div>
+
+                    <div class="chat-title">
+                        Análise jurídica
+                    </div>
+
+                    <div class="chat-subtitle">
+                        Triagem preliminar de contratos empresariais
+                    </div>
+
+                </div>
+
+                <button
+                    class="clear-btn"
+                    onclick="clearChat()"
+                >
+                    Limpar
+                </button>
+
+            </div>
+
+
+            <div
+                class="messages"
+                id="messages"
+            >
+
+                <div
+                    class="welcome"
+                    id="welcome"
+                >
+
+                    <div class="welcome-icon">
+                        ⚖
+                    </div>
+
+                    <h2>
+                        Como posso auxiliar?
+                    </h2>
+
+                    <p>
+                        Faça perguntas sobre contratos empresariais
+                        ou envie um PDF para uma análise preliminar
+                        de riscos, cláusulas e obrigações.
+                    </p>
+
+
+                    <div class="suggestions">
+
+                        <button
+                            class="suggestion"
+                            onclick="useSuggestion(
+                                'Identifique as principais cláusulas de risco deste contrato.'
+                            )"
+                        >
+                            🔎 Identificar cláusulas de risco
+                        </button>
+
+                        <button
+                            class="suggestion"
+                            onclick="useSuggestion(
+                                'Analise as cláusulas de rescisão e multa.'
+                            )"
+                        >
+                            📄 Analisar rescisão e multas
+                        </button>
+
+                        <button
+                            class="suggestion"
+                            onclick="useSuggestion(
+                                'Quais são as principais obrigações das partes?'
+                            )"
+                        >
+                            📌 Identificar obrigações
+                        </button>
+
+                        <button
+                            class="suggestion"
+                            onclick="useSuggestion(
+                                'Existem pontos relacionados à proteção de dados ou LGPD?'
+                            )"
+                        >
+                            🔐 Verificar LGPD
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- COMPOSER -->
+
+            <div class="composer-area">
+
+                <div
+                    class="attachment-preview"
+                    id="attachmentPreview"
+                >
+
+                    <div class="attachment-name">
+
+                        <span>📄</span>
+
+                        <span id="attachmentName">
+                            contrato.pdf
+                        </span>
+
+                    </div>
+
+                    <button
+                        class="remove-file"
+                        onclick="removeFile()"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+
+                <div class="composer">
+
+                    <button
+                        class="attach-btn"
+                        onclick="document
+                            .getElementById('fileInput')
+                            .click()"
+                        title="Enviar PDF"
+                    >
+                        📎
+                    </button>
+
+                    <input
+                        type="file"
+                        id="fileInput"
+                        accept="application/pdf"
+                        onchange="handleFile(this.files[0])"
+                    >
+
+
+                    <div class="input-wrapper">
+
+                        <textarea
+                            id="messageInput"
+                            placeholder="Digite sua pergunta jurídica..."
+                            rows="1"
+                            onkeydown="handleKeyDown(event)"
+                        ></textarea>
+
+                    </div>
+
+
+                    <button
+                        class="send-btn"
+                        id="sendBtn"
+                        onclick="sendMessage()"
+                    >
+                        ➤
+                    </button>
+
+                </div>
+
+
+                <div class="legal-warning">
+
+                    A análise é preliminar e não substitui
+                    revisão jurídica profissional.
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- RIGHT PANEL -->
+
+        <aside class="right-panel">
+
+
+            <!-- PDF -->
+
+            <div class="panel-section">
+
+                <div class="panel-title">
+                    Documento
+                </div>
+
+                <div
+                    class="upload-zone"
+                    id="uploadZone"
+                >
+
+                    <div class="upload-icon">
+                        📄
+                    </div>
+
+                    <strong>
+                        Envie um contrato
+                    </strong>
+
+                    <p>
+                        Arraste um PDF para esta área
+                        ou selecione um arquivo.
+                    </p>
+
+                    <label
+                        class="choose-file"
+                        for="fileInput"
+                    >
+                        Selecionar PDF
+                    </label>
+
+                </div>
+
+
+                <div
+                    class="document-card"
+                    id="documentCard"
+                >
+
+                    <div
+                        class="document-name"
+                        id="documentName"
+                    >
+                    </div>
+
+                    <div
+                        class="document-meta"
+                        id="documentMeta"
+                    >
+                    </div>
+
+                    <button
+                        class="analyze-btn"
+                        onclick="analyzePDF()"
+                    >
+                        Analisar documento
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- RISK -->
+
+            <div class="panel-section">
+
+                <div class="panel-title">
+                    Indicador de risco
+                </div>
+
+                <div class="risk-card">
+
+                    <div class="risk-header">
+
+                        <span class="risk-label">
+                            Classificação atual
+                        </span>
+
+                        <span
+                            class="risk-value"
+                            id="riskValue"
+                        >
+                            Não analisado
+                        </span>
+
+                    </div>
+
+                    <div class="risk-bar">
+
+                        <div
+                            class="risk-progress"
+                            id="riskProgress"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FINDINGS -->
+
+            <div class="panel-section">
+
+                <div class="panel-title">
+                    Pontos identificados
+                </div>
+
+                <div id="findings">
+
+                    <div
+                        style="
+                        color:#94a3b8;
+                        font-size:11px;
+                        "
+                    >
+                        Nenhum ponto identificado.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    /*
+    ============================================================
+    CONFIGURAÇÃO DA API
+    ============================================================
+    */
+
+    const API_BASE_URL = "http://localhost:8000";
+
+
+    /*
+    ============================================================
+    ESTADO DA APLICAÇÃO
+    ============================================================
+    */
+
+    let selectedFile = null;
+
+    let currentDocumentId = null;
+
+    let isLoading = false;
+
+
+    /*
+    ============================================================
+    ELEMENTOS
+    ============================================================
+    */
+
+    const messageInput =
+        document.getElementById("messageInput");
+
+    const messages =
+        document.getElementById("messages");
+
+    const welcome =
+        document.getElementById("welcome");
+
+    const sendBtn =
+        document.getElementById("sendBtn");
+
+    const uploadZone =
+        document.getElementById("uploadZone");
+
+    const documentCard =
+        document.getElementById("documentCard");
+
+
+    /*
+    ============================================================
+    TEXTAREA
+    ============================================================
+    */
+
+    messageInput.addEventListener(
+        "input",
+        function () {
+
+            this.style.height = "auto";
+
+            this.style.height =
+                Math.min(
+                    this.scrollHeight,
+                    130
+                ) + "px";
+
+        }
+    );
+
+
+    /*
+    ============================================================
+    ENTER
+    ============================================================
+    */
+
+    function handleKeyDown(event) {
+
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
+
+            event.preventDefault();
+
+            sendMessage();
+
+        }
+
+    }
+
+
+    /*
+    ============================================================
+    SUGESTÃO
+    ============================================================
+    */
+
+    function useSuggestion(text) {
+
+        messageInput.value = text;
+
+        messageInput.dispatchEvent(
+            new Event("input")
+        );
+
+        messageInput.focus();
+
+    }
+
+
+    /*
+    ============================================================
+    ENVIAR CHAT
+    ============================================================
+    */
+
+    async function sendMessage() {
+
+        if (isLoading) {
+            return;
+        }
+
+        const message =
+            messageInput.value.trim();
+
+        if (!message) {
+            return;
+        }
+
+
+        addMessage(
+            "user",
+            message
+        );
+
+        messageInput.value = "";
+
+        messageInput.style.height = "auto";
+
+
+        if (welcome) {
+            welcome.style.display = "none";
+        }
+
+
+        const loadingId =
+            addLoading();
+
+
+        setLoading(true);
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API_BASE_URL}/api/chat`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            message: message,
+
+                            document_id:
+                                currentDocumentId
+
+                        })
+
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Erro HTTP ${response.status}`
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            removeLoading(loadingId);
+
+
+            if (!data.success) {
+
+                addMessage(
+                    "assistant",
+                    data.message ||
+                    "Não foi possível processar a solicitação."
+                );
+
+                return;
+            }
+
+
+            addMessage(
+                "assistant",
+                data.answer ||
+                "Não foi retornada uma resposta."
+            );
+
+
+            if (data.risk_level) {
+
+                updateRisk(
+                    data.risk_level,
+                    data.risk_score
+                );
+
+            }
+
+
+            if (data.findings) {
+
+                renderFindings(
+                    data.findings
+                );
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            removeLoading(loadingId);
+
+            addMessage(
+                "assistant",
+                "Não foi possível conectar ao serviço de análise jurídica. Verifique se o back-end está ativo."
+            );
+
+        }
+
+        finally {
+
+            setLoading(false);
+
+        }
+
+    }
+
+
+    /*
+    ============================================================
+    UPLOAD
+    ============================================================
+    */
+
+    function handleFile(file) {
+
+        if (!file) {
+            return;
+        }
+
+
+        if (
+            file.type !==
+            "application/pdf"
+        ) {
+
+            alert(
+                "Somente arquivos PDF são aceitos."
+            );
+
+            return;
+
+        }
+
+
+        const maxSize =
+            20 * 1024 * 1024;
+
+
+        if (file.size > maxSize) {
+
+            alert(
+                "O arquivo deve possuir no máximo 20 MB."
+            );
+
+            return;
+
+        }
+
+
+        selectedFile = file;
+
+
+        document.getElementById(
+            "attachmentName"
+        ).textContent =
+            file.name;
+
+
+        document.getElementById(
+            "documentName"
+        ).textContent =
+            file.name;
+
+
+        document.getElementById(
+            "documentMeta"
+        ).textContent =
+            formatBytes(file.size);
+
+
+        document.getElementById(
+            "attachmentPreview"
+        ).classList.add(
+            "visible"
+        );
+
+
+        uploadZone.style.display =
+            "none";
+
+
+        documentCard.classList.add(
+            "visible"
+        );
+
+    }
+
+
+    /*
+    ============================================================
+    DRAG & DROP
+    ============================================================
+    */
+
+    uploadZone.addEventListener(
+        "dragover",
+        function (event) {
+
+            event.preventDefault();
+
+            uploadZone.classList.add(
+                "dragover"
+            );
+
+        }
+    );
+
+
+    uploadZone.addEventListener(
+        "dragleave",
+        function () {
+
+            uploadZone.classList.remove(
+                "dragover"
+            );
+
+        }
+    );
+
+
+    uploadZone.addEventListener(
+        "drop",
+        function (event) {
+
+            event.preventDefault();
+
+            uploadZone.classList.remove(
+                "dragover"
+            );
+
+
+            const file =
+                event.dataTransfer.files[0];
+
+
+            handleFile(file);
+
+        }
+    );
+
+
+    /*
+    ============================================================
+    ANALISAR PDF
+    ============================================================
+    */
+
+    async function analyzePDF() {
+
+        if (!selectedFile) {
+
+            alert(
+                "Selecione um arquivo PDF."
+            );
+
+            return;
+
+        }
+
+
+        const loadingId =
+            addLoading();
+
+
+        setLoading(true);
+
+
+        try {
+
+            const formData =
+                new FormData();
+
+
+            formData.append(
+                "file",
+                selectedFile
+            );
+
+
+            const response =
+                await fetch(
+                    `${API_BASE_URL}/api/analyze-pdf`,
+                    {
+                        method: "POST",
+
+                        body: formData
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Erro HTTP ${response.status}`
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            removeLoading(
+                loadingId
+            );
+
+
+            if (!data.success) {
+
+                addMessage(
+                    "assistant",
+                    data.message ||
+                    "Não foi possível analisar o documento."
+                );
+
+                return;
+
+            }
+
+
+            currentDocumentId =
+                data.document_id ||
+                null;
+
+
+            addMessage(
+                "assistant",
+                data.summary ||
+                "O documento foi processado."
+            );
+
+
+            updateRisk(
+                data.risk_level,
+                data.risk_score
+            );
+
+
+            renderFindings(
+                data.findings || []
+            );
+
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            removeLoading(
+                loadingId
+            );
+
+
+            addMessage(
+                "assistant",
+                "Erro ao enviar ou analisar o PDF."
+            );
+
+        }
+
+        finally {
+
+            setLoading(false);
+
+        }
+
+    }
+
+
+    /*
+    ============================================================
+    REMOVER PDF
+    ============================================================
+    */
+
+    function removeFile() {
+
+        selectedFile = null;
+
+        currentDocumentId = null;
+
+
+        document.getElementById(
+            "fileInput"
+        ).value = "";
+
+
+        document.getElementById(
+            "attachmentPreview"
+        ).classList.remove(
+            "visible"
+        );
+
+
+        documentCard.classList.remove(
+            "visible"
+        );
+
+
+        uploadZone.style.display =
+            "block";
+
+
+        resetAnalysis();
+
+    }
+
+
+    /*
+    ============================================================
+    MENSAGEM
+    ============================================================
+    */
+
+    function addMessage(
+        type,
+        text
+    ) {
+
+        const wrapper =
+            document.createElement(
+                "div"
+            );
+
+
+        wrapper.className =
+            `message ${type}`;
+
+
+        const avatar =
+            document.createElement(
+                "div"
+            );
+
+
+        avatar.className =
+            "avatar";
+
+
+        avatar.textContent =
+            type === "user"
+                ? "U"
+                : "⚖";
+
+
+        const content =
+            document.createElement(
+                "div"
+            );
+
+
+        content.className =
+            "message-content";
+
+
+        const bubble =
+            document.createElement(
+                "div"
+            );
+
+
+        bubble.className =
+            "message-bubble";
+
+
+        if (type === "assistant") {
+
+            bubble.innerHTML =
+                formatResponse(text);
+
+        }
+
+        else {
+
+            bubble.textContent =
+                text;
+
+        }
+
+
+        const time =
+            document.createElement(
+                "div"
+            );
+
+
+        time.className =
+            "message-time";
+
+
+        time.textContent =
+            new Date().toLocaleTimeString(
+                "pt-BR",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+
+        content.appendChild(
+            bubble
+        );
+
+        content.appendChild(
+            time
+        );
+
+
+        wrapper.appendChild(
+            avatar
+        );
+
+        wrapper.appendChild(
+            content
+        );
+
+
+        messages.appendChild(
+            wrapper
+        );
+
+
+        scrollMessages();
+
+    }
+
+
+    /*
+    ============================================================
+    LOADING
+    ============================================================
+    */
+
+    function addLoading() {
+
+        const id =
+            "loading-" +
+            Date.now();
+
+
+        const wrapper =
+            document.createElement(
+                "div"
+            );
+
+
+        wrapper.id = id;
+
+        wrapper.className =
+            "message assistant";
+
+
+        wrapper.innerHTML = `
+
+            <div class="avatar">
+                ⚖
+            </div>
+
+            <div class="message-content">
+
+                <div class="message-bubble">
+
+                    <div class="typing">
+
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        messages.appendChild(
+            wrapper
+        );
+
+
+        scrollMessages();
+
+
+        return id;
+
+    }
+
+
+    function removeLoading(id) {
+
+        const element =
+            document.getElementById(id);
+
+
+        if (element) {
+
+            element.remove();
+
+        }
+
+    }
+
+
+    /*
+    ============================================================
+    RISCO
+    ============================================================
+    */
+
+    function updateRisk(
+        level,
+        score
+    ) {
+
+        const value =
+            document.getElementById(
+                "riskValue"
+            );
+
+
+        const progress =
+            document.getElementById(
+                "riskProgress"
+            );
+
+
+        if (!level) {
+
+            value.textContent =
+                "Não analisado";
+
+            progress.style.width =
+                "0%";
+
+            return;
+
+        }
+
+
+        const normalized =
+            String(level)
+            .toLowerCase();
+
+
+        if (
+            normalized === "alto" ||
+            normalized === "high" ||
+            normalized === "critico" ||
+            normalized === "crítico"
+        ) {
+
+            value.textContent =
+                "Alto";
+
+            progress.style.width =
+                `${score || 85}%`;
+
+        }
+
+        else if (
+            normalized === "medio" ||
+            normalized === "médio" ||
+            normalized === "medium"
+        ) {
+
+            value.textContent =
+                "Médio";
+
+            progress.style.width =
+                `${score || 55}%`;
+
+        }
+
+        else {
+
+            value.textContent =
+                "Baixo";
+
+            progress.style.width =
+                `${score || 25}%`;
+
+        }
+
+    }
+
+
+    /*
+    ============================================================
+    FINDINGS
+    ============================================================
+    */
+
+    function renderFindings(
+        findings
+    ) {
+
+        const container =
+            document.getElementById(
+                "findings"
+            );
+
+
+        container.innerHTML = "";
+
+
+        if (
+            !findings ||
+            findings.length === 0
+        ) {
+
+            container.innerHTML = `
+
+                <div
+                    style="
+                    color:#94a3b8;
+                    font-size:11px;
+                    "
+                >
+                    Nenhum ponto identificado.
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        findings.forEach(
+            finding => {
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                item.className =
+                    "finding";
+
+
+                const severity =
+                    normalizeSeverity(
+                        finding.severity
+                    );
+
+
+                item.innerHTML = `
+
+                    <div class="finding-top">
+
+                        <span class="finding-category">
+
+                            ${escapeHTML(
+                                finding.category ||
+                                "Ponto jurídico"
+                            )}
+
+                        </span>
+
+                        <span
+                            class="severity ${severity.className}"
+                        >
+                            ${severity.label}
+                        </span>
+
+                    </div>
+
+                    <div class="finding-description">
+
+                        ${escapeHTML(
+                            finding.description ||
+                            "Sem descrição."
+                        )}
+
+                    </div>
+
+                `;
+
+
+                container.appendChild(
+                    item
+                );
+
+            }
+        );
+
+    }
+
+
+    /*
+    ============================================================
+    SEVERIDADE
+    ============================================================
+    */
+
+    function normalizeSeverity(
+        severity
+    ) {
+
+        const value =
+            String(
+                severity || ""
+            ).toLowerCase();
+
+
+        if (
+            value.includes("alto") ||
+            value.includes("high") ||
+            value.includes("critical") ||
+            value.includes("crit")
+        ) {
+
+            return {
+                className: "high",
+                label: "ALTO"
+            };
+
+        }
+
+
+        if (
+            value.includes("medio") ||
+            value.includes("médio") ||
+            value.includes("medium")
+        ) {
+
+            return {
+                className: "medium",
+                label: "MÉDIO"
+            };
+
+        }
+
+
+        return {
+
+            className: "low",
+
+            label: "BAIXO"
+
+        };
+
+    }
+
+
+    /*
+    ============================================================
+    FORMATAR RESPOSTA
+    ============================================================
+    */
+
+    function formatResponse(
+        text
+    ) {
+
+        let html =
+            escapeHTML(
+                text
+            );
+
+
+        html =
+            html.replace(
+                /\*\*(.*?)\*\*/g,
+                "<strong>$1</strong>"
+            );
+
+
+        html =
+            html.replace(
+                /\n/g,
+                "<br>"
+            );
+
+
+        return html;
+
+    }
+
+
+    /*
+    ============================================================
+    ESCAPE
+    ============================================================
+    */
+
+    function escapeHTML(
+        value
+    ) {
+
+        const div =
+            document.createElement(
+                "div"
+            );
+
+
+        div.textContent =
+            value;
+
+
+        return div.innerHTML;
+
+    }
+
+
+    /*
+    ============================================================
+    NOVA CONVERSA
+    ============================================================
+    */
+
+    function newConversation() {
+
+        messages.innerHTML = "";
+
+
+        selectedFile = null;
+
+        currentDocumentId = null;
+
+
+        document.getElementById(
+            "fileInput"
+        ).value = "";
+
+
+        document.getElementById(
+            "attachmentPreview"
+        ).classList.remove(
+            "visible"
+        );
+
+
+        documentCard.classList.remove(
+            "visible"
+        );
+
+
+        uploadZone.style.display =
+            "block";
+
+
+        resetAnalysis();
+
+
+        const welcomeElement =
+            document.createElement(
+                "div"
+            );
+
+
+        welcomeElement.className =
+            "welcome";
+
+
+        welcomeElement.id =
+            "welcome";
+
+
+        welcomeElement.innerHTML = `
+
+            <div class="welcome-icon">
+                ⚖
+            </div>
+
+            <h2>
+                Como posso auxiliar?
+            </h2>
+
+            <p>
+                Faça perguntas sobre contratos empresariais
+                ou envie um PDF para uma análise preliminar
+                de riscos, cláusulas e obrigações.
+            </p>
+
+        `;
+
+
+        messages.appendChild(
+            welcomeElement
+        );
+
+    }
+
+
+    /*
+    ============================================================
+    LIMPAR
+    ============================================================
+    */
+
+    function clearChat() {
+
+        messages.innerHTML = "";
+
+        newConversation();
+
+    }
+
+
+    /*
+    ============================================================
+    RESET
+    ============================================================
+    */
+
+    function resetAnalysis() {
+
+        document.getElementById(
+            "riskValue"
+        ).textContent =
+            "Não analisado";
+
+
+        document.getElementById(
+            "riskProgress"
+        ).style.width =
+            "0%";
+
+
+        document.getElementById(
+            "findings"
+        ).innerHTML = `
+
+            <div
+                style="
+                color:#94a3b8;
+                font-size:11px;
+                "
+            >
+                Nenhum ponto identificado.
+            </div>
+
+        `;
+
+    }
+
+
+    /*
+    ============================================================
+    LOADING STATE
+    ============================================================
+    */
+
+    function setLoading(
+        state
+    ) {
+
+        isLoading =
+            state;
+
+
+        sendBtn.disabled =
+            state;
+
+    }
+
+
+    /*
+    ============================================================
+    SCROLL
+    ============================================================
+    */
+
+    function scrollMessages() {
+
+        messages.scrollTop =
+            messages.scrollHeight;
+
+    }
+
+
+    /*
+    ============================================================
+    FORMAT BYTES
+    ============================================================
+    */
+
+    function formatBytes(
+        bytes
+    ) {
+
+        if (
+            bytes === 0
+        ) {
+            return "0 Bytes";
+        }
+
+
+        const units = [
+            "Bytes",
+            "KB",
+            "MB",
+            "GB"
+        ];
+
+
+        const i =
+            Math.floor(
+                Math.log(bytes) /
+                Math.log(1024)
+            );
+
+
+        return (
+            parseFloat(
+                (
+                    bytes /
+                    Math.pow(1024, i)
+                ).toFixed(2)
+            ) +
+            " " +
+            units[i]
+        );
+
+    }
+
+
+</script>
+
+</body>
+
+</html>
